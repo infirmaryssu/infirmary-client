@@ -8,12 +8,14 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import logoImg from '../assets/logo.jpg';
+import infirmaryBg from '../assets/infirmary bg.jpg';
 
 const news = [
   {
     title: "First Aid & Health Checks",
-    description: "The school infirmary is here for bumps, fevers, and minor injuries. Students and staff can book a visit anytime.",
-    image: "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&q=80&w=1000"
+    description: "The School University is here for bumps, fevers, and minor injuries. Students and staff can book a visit anytime.",
+    // image: "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&q=80&w=1000"
+    image: infirmaryBg
   },
   {
     title: "Flu Shots for Students & Staff",
@@ -85,7 +87,7 @@ export const LandingPage = () => {
                 <div className="max-w-2xl space-y-4 sm:space-y-8">
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-primary/20 backdrop-blur-md border border-primary/30 text-white text-[10px] font-black rounded-full uppercase tracking-[0.15em] sm:tracking-[0.2em]">
                     <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-pulse" />
-                    School Infirmary Updates
+                    School University Updates
                   </div>
                   <h1 className="text-3xl sm:text-5xl md:text-8xl font-black text-white leading-[1.1] tracking-tighter">
                     {item.title}
@@ -97,9 +99,9 @@ export const LandingPage = () => {
                     <button onClick={() => navigate('/signup')} className="w-full sm:w-auto px-6 py-4 sm:px-10 sm:py-5 bg-primary text-white font-black rounded-2xl hover:bg-primary-hover transition-all shadow-2xl shadow-primary/40 flex items-center justify-center gap-3 group">
                       Book Appointment <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform shrink-0" />
                     </button>
-                    <button className="w-full sm:w-auto px-6 py-4 sm:px-10 sm:py-5 bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold rounded-2xl hover:bg-white/20 transition-all">
+                    {/* <button className="w-full sm:w-auto px-6 py-4 sm:px-10 sm:py-5 bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold rounded-2xl hover:bg-white/20 transition-all">
                       View News
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </div>
@@ -126,7 +128,7 @@ export const LandingPage = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="text-center space-y-4 sm:space-y-6 mb-12 sm:mb-24">
               <div className="inline-block px-4 py-1.5 bg-primary/10 text-primary text-xs font-black rounded-full uppercase tracking-widest">What We Offer</div>
-              <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-slate-900 tracking-tight px-1">School Infirmary Services</h2>
+              <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-slate-900 tracking-tight px-1">School University Services</h2>
               <p className="text-slate-500 max-w-2xl mx-auto text-base sm:text-xl leading-relaxed">Care and support for students and staff — first aid, health checks, and a safe place when you need it.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-10">
@@ -168,7 +170,7 @@ export const LandingPage = () => {
                 </div>
                 <div className="space-y-6 sm:space-y-8">
                   {[
-                    { step: "01", title: "Sign Up", desc: "Register as a student or staff member to use the school infirmary booking system." },
+                    { step: "01", title: "Sign Up", desc: "Register as a student or staff member to use the School University booking system." },
                     { step: "02", title: "Choose Reason", desc: "Select whether you need first aid, a health check, medication support, or rest." },
                     { step: "03", title: "Pick a Time", desc: "Choose a date and time that works for you during school hours." },
                     { step: "04", title: "Come to the Infirmary", desc: "Show up at your scheduled time — we’ll be ready for you." }
@@ -212,18 +214,18 @@ export const LandingPage = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-10 pb-10 border-b border-white/5">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white/10 shadow-xl shrink-0 flex items-center justify-center">
-                <img src={logoImg} alt="School Infirmary" className="w-full h-full object-contain" />
+                <img src={logoImg} alt="School University" className="w-full h-full object-contain" />
               </div>
               <div>
                 <span className="font-black text-2xl tracking-tighter block">Infirmary Connect</span>
-                <span className="text-primary font-bold text-xs uppercase tracking-[0.2em]">School Infirmary</span>
+                <span className="text-primary font-bold text-xs uppercase tracking-[0.2em]">School University</span>
               </div>
             </div>
             <p className="text-slate-400 max-w-md text-base leading-relaxed">
               First aid, health checks, and a safe place to rest for students and staff.
             </p>
           </div>
-          <p className="pt-8 text-slate-500 text-sm">© 2026 School Infirmary Booking.</p>
+          <p className="pt-8 text-slate-500 text-sm">© 2026 School University Booking.</p>
         </div>
       </footer>
     </div>

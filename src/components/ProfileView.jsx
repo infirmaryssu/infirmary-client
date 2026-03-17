@@ -23,11 +23,11 @@ export const ProfileView = ({ user }) => {
               </span> */}
             </div>
           </div>
-          <div className="md:ml-auto">
+          {/* <div className="md:ml-auto">
             <button className="px-6 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
               Edit Profile
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
 
