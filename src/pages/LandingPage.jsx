@@ -51,6 +51,8 @@ export const LandingPage = () => {
   const [kioskError, setKioskError] = useState(null);
   const [showReceipt, setShowReceipt] = useState(false);
   const scanInputRef = useRef(null);
+  const kioskSubmitLockRef = useRef(false);
+  const lastProcessedScanRef = useRef('');
 
   const formatIdInput = (raw) => {
     // Keep formatting simple to avoid blocking deletion:
@@ -93,6 +95,9 @@ export const LandingPage = () => {
     setKioskLoading(false);
     setKioskResult(null);
     setKioskError(null);
+    setShowReceipt(false);
+    kioskSubmitLockRef.current = false;
+    lastProcessedScanRef.current = '';
   };
 
   const handleOpenKiosk = () => {
@@ -110,6 +115,8 @@ export const LandingPage = () => {
     setScanValue('');
     setKioskResult(null);
     setKioskError(null);
+    kioskSubmitLockRef.current = false;
+    lastProcessedScanRef.current = '';
     setShowReceipt(false);
     setTimeout(() => {
       if (scanInputRef.current) {
@@ -121,18 +128,26 @@ export const LandingPage = () => {
   const handleKioskSubmit = async (e) => {
     e.preventDefault();
     if (!kioskMode) return;
-    if (!scanValue.trim()) return;
+    if (kioskLoading || kioskSubmitLockRef.current) return;
+    const trimmed = scanValue.trim();
+    if (!trimmed) return;
+    // If we already auto-processed this exact QR scan, ignore the form Enter submit.
+    if (kioskMode === 'qr' && lastProcessedScanRef.current === trimmed) return;
     try {
+      kioskSubmitLockRef.current = true;
+      if (kioskMode === 'qr') lastProcessedScanRef.current = trimmed;
+      setShowReceipt(false);
       setKioskLoading(true);
       setKioskResult(null);
       setKioskError(null);
       const payload =
         kioskMode === 'qr'
-          ? { mode: 'qr', payload: scanValue.trim() }
-          : { mode: 'id', id: scanValue.trim() };
+          ? { mode: 'qr', payload: trimmed }
+          : { mode: 'id', id: trimmed };
       const data = await authService.kioskCheckIn(payload);
       setKioskResult(data);
       setShowReceipt(true);
+      if (kioskMode === 'qr') setScanValue('');
     } catch (err) {
       const resp = err?.response?.data;
       const message = resp?.message || 'Failed to check in. Please try again.';
@@ -143,23 +158,29 @@ export const LandingPage = () => {
       });
     } finally {
       setKioskLoading(false);
+      kioskSubmitLockRef.current = false;
     }
   };
 
   // Auto-submit when scanning QR code (scanner types full payload then Enter)
   useEffect(() => {
     if (kioskMode !== 'qr') return;
-    if (kioskLoading) return;
+    if (kioskLoading || kioskSubmitLockRef.current) return;
     const value = scanValue;
     const trimmed = value.trim();
     if (!trimmed) return;
 
-    // Heuristic: QR payload is our JSON string. When it contains both '{' and '}', treat as complete.
+    // Heuristic: QR payload is usually our JSON string; sometimes scanners just return NS-/EM- directly.
     const hasJsonBraces = trimmed.includes('{') && trimmed.includes('}');
-    if (!hasJsonBraces) return;
+    const hasIdPattern = /\b(?:NS|EM)-\d+\b/i.test(trimmed);
+    if (!hasJsonBraces && !hasIdPattern) return;
+    if (lastProcessedScanRef.current === trimmed) return;
 
     (async () => {
+      kioskSubmitLockRef.current = true;
+      lastProcessedScanRef.current = trimmed;
       try {
+        setShowReceipt(false);
         setKioskLoading(true);
         setKioskResult(null);
         setKioskError(null);
@@ -167,7 +188,7 @@ export const LandingPage = () => {
         const data = await authService.kioskCheckIn(payload);
         setKioskResult(data);
         setShowReceipt(true);
-        // Clear field so scanner can be used again without double-submitting same payload
+        // Clear field so the scanner can be used again (also prevents Enter from resubmitting).
         setScanValue('');
       } catch (err) {
         const resp = err?.response?.data;
@@ -179,6 +200,9 @@ export const LandingPage = () => {
         });
       } finally {
         setKioskLoading(false);
+        kioskSubmitLockRef.current = false;
+        // Prevent the input from getting stuck with the scanned payload (e.g. old/bad QR content).
+        setScanValue('');
       }
     })();
   }, [kioskMode, scanValue, kioskLoading]);
