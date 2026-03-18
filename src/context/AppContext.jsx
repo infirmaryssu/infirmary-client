@@ -35,6 +35,12 @@ export const AppProvider = ({ children }) => {
     ? {
         name: [authUser.firstName, authUser.middleName, authUser.lastName].filter(Boolean).join(' '),
         email: authUser.email,
+        userType: authUser.userType || null,
+        studentNumber: authUser.studentNumber || null,
+        employeeNumber: authUser.employeeNumber || null,
+        college: authUser.college || '',
+        program: authUser.program || '',
+        qrCode: authUser.qrCode || null,
         phone: authUser.phone || '',
         address: authUser.address || '',
         patientId: `P-${authUser.id?.slice(0, 8) || '00000'}`,
@@ -47,6 +53,7 @@ export const AppProvider = ({ children }) => {
     : {
         name: 'Guest',
         email: '',
+        userType: null,
         phone: '',
         address: '',
         patientId: '',

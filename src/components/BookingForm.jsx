@@ -45,7 +45,6 @@ const commonPurposes = [
   'Laboratory Results Review',
   'Physical Examination',
   'Specific Pain / Concern',
-  'Routine Cleaning',
   'Dietary Counseling'
 ];
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { UserPlus, Save, User, Mail, MapPin, Phone, Lock } from 'lucide-react';
+import { UserPlus, Save, User, Mail, MapPin, Phone, Lock, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { adminService } from '../../services/adminService';
 
@@ -28,6 +28,8 @@ export const AdminCreateAdminPage = () => {
   const [userType, setUserType] = useState(null);
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     try {
@@ -176,28 +178,48 @@ export const AdminCreateAdminPage = () => {
               <label className="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
                 <Lock size={14} /> Password
               </label>
-              <input
-                required
-                type="password"
-                placeholder="Min 8 characters"
-                minLength={8}
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium"
-              />
+              <div className="relative group">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+                <input
+                  required
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Min 8 characters"
+                  minLength={8}
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  className="w-full px-4 pr-11 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium"
+                />
+              </div>
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
                 <Lock size={14} /> Confirm Password
               </label>
-              <input
-                required
-                type="password"
-                placeholder="Repeat password"
-                value={form.confirmPassword}
-                onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium"
-              />
+              <div className="relative group">
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+                <input
+                  required
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="Repeat password"
+                  value={form.confirmPassword}
+                  onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+                  className="w-full px-4 pr-11 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm font-medium"
+                />
+              </div>
             </div>
           </div>
 

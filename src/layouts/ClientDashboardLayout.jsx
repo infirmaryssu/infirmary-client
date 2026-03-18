@@ -29,6 +29,15 @@ const getPageTitle = (pathname) => {
   return segment.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
 };
 
+const getUserTypeLabel = (userType) => {
+  const map = {
+    new: 'New Student',
+    old: 'Old Student',
+    employee: 'Employee',
+  };
+  return map[userType] || (userType ? String(userType) : 'Patient');
+};
+
 export const ClientDashboardLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -90,6 +99,8 @@ export const ClientDashboardLayout = () => {
   if (!token) {
     return <Navigate to="/login" replace />;
   }
+
+  const userTypeLabel = getUserTypeLabel(userProfile?.userType);
 
   return (
     <div className="min-h-screen bg-slate-50 flex overflow-x-hidden">
@@ -222,7 +233,7 @@ export const ClientDashboardLayout = () => {
               >
                 <div className="text-right hidden sm:block max-w-[120px] md:max-w-none text-left">
                   <p className="text-sm font-semibold text-slate-800 truncate">{userProfile.name}</p>
-                  <p className="text-xs text-slate-500">Patient</p>
+                  <p className="text-xs text-slate-500">{userTypeLabel}</p>
                 </div>
                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 ring-2 ring-transparent group-hover:ring-primary/20">
                   <User size={18} className="sm:w-5 sm:h-5" />

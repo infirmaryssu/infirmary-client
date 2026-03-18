@@ -8,7 +8,9 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import logoImg from '../assets/logo.jpg';
-import infirmaryBg from '../assets/infirmary bg.jpg';
+import infirmaryBg from '../assets/infirmary_bg.jpg';
+import essuBg from '../assets/essu_bg.jpg';
+import vaccinationBg from '../assets/vaccination_bg.png';
 
 const news = [
   {
@@ -19,13 +21,16 @@ const news = [
   {
     title: "Flu Shots for Students & Staff",
     description: "Annual flu vaccinations are available. Book a slot for your child or yourself and stay healthy this term.",
-    image: "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&q=80&w=1000"
+    // image: "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&q=80&w=1000"
+    image: vaccinationBg
   },
   {
     title: "Wellness at School",
     description: "From minor aches to health advice, our school nurse and team are here to support every student and staff member.",
     // image: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=1000"
-    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=1000"
+    // image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=1000"
+    image: essuBg
+    
   }
 ];
 
@@ -149,9 +154,9 @@ export const LandingPage = () => {
                     </div>
                     <h3 className="text-xl sm:text-2xl font-black text-slate-800 mb-3 sm:mb-4">{s.title}</h3>
                     <p className="text-slate-500 leading-relaxed text-base sm:text-lg font-medium">{s.desc}</p>
-                    <div className="mt-6 sm:mt-8 flex items-center gap-2 text-primary font-bold opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
+                    {/* <div className="mt-6 sm:mt-8 flex items-center gap-2 text-primary font-bold opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
                       Learn more <ArrowRight size={16} className="shrink-0" />
-                    </div>
+                    </div> */}
                   </div>
                 </motion.div>
               ))}
