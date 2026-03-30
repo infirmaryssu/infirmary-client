@@ -21,12 +21,18 @@ import { AdminRecordsPage } from './pages/admin/AdminRecordsPage';
 import { AdminSystemLogsPage } from './pages/admin/AdminSystemLogsPage';
 import { AdminCreateAdminPage } from './pages/admin/AdminCreateAdminPage';
 import { AdminQueuePage } from './pages/admin/AdminQueuePage';
+import { KioskLandingPage } from './pages/KioskLandingPage';
+import { KioskAppointmentPage } from './pages/KioskAppointmentPage';
 
 export default function App() {
   return (
     <AppProvider>
       <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       <Routes>
+        {/* Kiosk: full-screen check-in (no public header) */}
+        <Route path="/kiosk" element={<KioskLandingPage />} />
+        <Route path="/kiosk/appointment" element={<KioskAppointmentPage />} />
+
         {/* Public routes: header + Outlet */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />
