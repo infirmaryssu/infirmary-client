@@ -17,6 +17,15 @@ function KioskResultBlock({ kioskResult, tone = 'light' }) {
         isDark ? 'border-white/20' : 'border-slate-100'
       }`}
     >
+      {kioskResult.checkInDateDisplay && (
+        <p
+          className={`text-xs font-semibold ${
+            isDark ? 'text-emerald-200/90' : 'text-primary'
+          }`}
+        >
+          {kioskResult.checkInDateDisplay}
+        </p>
+      )}
       {kioskResult.queueNumber && (
         <div className="flex items-center justify-between gap-2">
           <p
@@ -101,6 +110,11 @@ export function ReceiptOverlay({ kioskResult, onClose }) {
           <h3 className="font-black text-slate-900 text-2xl sm:text-3xl">
             You&apos;re in the queue
           </h3>
+          {kioskResult.checkInDateDisplay && (
+            <p className="text-sm font-bold text-slate-600 pt-1">
+              {kioskResult.checkInDateDisplay}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col items-center space-y-2">
