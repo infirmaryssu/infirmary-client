@@ -5,7 +5,7 @@ import ReactCalendar from 'react-calendar';
 import { appointmentService } from '../services/appointmentService';
 import 'react-calendar/dist/Calendar.css';
 import { format, isBefore, startOfToday, getDay, addMonths, isAfter, isValid, parseISO } from 'date-fns';
-import { Clock, User, FileText, CheckCircle2, AlertCircle, Calendar as CalendarIcon, ClipboardList, Tag, X, Ticket, MapPin, CalendarDays } from 'lucide-react';
+import { Clock, User, FileText, CheckCircle2, AlertCircle, Calendar as CalendarIcon, ClipboardList, Tag, X, Ticket, MapPin, CalendarDays, Building2, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const safeFormat = (date, formatStr) => {
@@ -51,8 +51,10 @@ const commonPurposes = [
 const MAX_SLOTS = 50;
 const DEFAULT_TIME_SLOTS = ['08:00 - 11:00', '13:00 - 16:00'];
 
-const ConfirmationModal = ({ isOpen, appointment, onClose }) => {
+const ConfirmationModal = ({ isOpen, appointment, onClose, user }) => {
   if (!appointment) return null;
+  const showDepartment = Boolean(user?.college?.trim());
+  const showProgram = Boolean(user?.program?.trim());
 
   return (
     <AnimatePresence>
@@ -116,6 +118,29 @@ const ConfirmationModal = ({ isOpen, appointment, onClose }) => {
                   </p>
                 </div>
               </div>
+
+              {(showDepartment || showProgram) && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
+                  {showDepartment && (
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-slate-400 uppercase">Department</p>
+                      <p className="font-bold text-slate-800 flex items-start gap-2">
+                        <Building2 size={14} className="text-primary shrink-0 mt-0.5" />
+                        <span className="min-w-0">{user.college}</span>
+                      </p>
+                    </div>
+                  )}
+                  {showProgram && (
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-slate-400 uppercase">Program</p>
+                      <p className="font-bold text-slate-800 flex items-start gap-2">
+                        <GraduationCap size={14} className="text-primary shrink-0 mt-0.5" />
+                        <span className="min-w-0">{user.program}</span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="pt-4 border-t border-slate-100">
                 <div className="flex items-start gap-3 text-sm text-slate-500">
@@ -263,6 +288,7 @@ export const BookingForm = ({ onBook, appointments, user }) => {
         isOpen={showConfirmation}
         appointment={lastBooked}
         onClose={handleConfirmationDone}
+        user={user}
       />
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8 px-0">

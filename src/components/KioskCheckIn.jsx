@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { QrCode, Keyboard, X } from 'lucide-react';
+import { QrCode, Keyboard, X, Building2, GraduationCap, Timer } from 'lucide-react';
 import logoImg from '../assets/logo.jpg';
 import {
   useKioskCheckIn,
@@ -50,6 +50,12 @@ function KioskResultBlock({ kioskResult, tone = 'light' }) {
         {kioskResult.user?.employeeNumber && (
           <p>Employee No.: {kioskResult.user.employeeNumber}</p>
         )}
+        {kioskResult.user?.college?.trim() && (
+          <p>College: {kioskResult.user.college}</p>
+        )}
+        {kioskResult.user?.program?.trim() && (
+          <p>Program: {kioskResult.user.program}</p>
+        )}
         {kioskResult.hasAppointmentToday && kioskResult.appointment ? (
           <div
             className={`mt-2 p-3 rounded-xl space-y-1 ${
@@ -88,15 +94,51 @@ function KioskResultBlock({ kioskResult, tone = 'light' }) {
   );
 }
 
+const RECEIPT_AUTO_CLOSE_SECONDS = 10;
+
 export function ReceiptOverlay({ kioskResult, onClose }) {
+  const [secondsLeft, setSecondsLeft] = useState(RECEIPT_AUTO_CLOSE_SECONDS);
+  const closeRef = useRef(onClose);
+  const didAutoCloseRef = useRef(false);
+
+  useEffect(() => {
+    closeRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!kioskResult) return undefined;
+    didAutoCloseRef.current = false;
+    setSecondsLeft(RECEIPT_AUTO_CLOSE_SECONDS);
+    const id = setInterval(() => {
+      setSecondsLeft((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [kioskResult]);
+
+  useEffect(() => {
+    if (!kioskResult || secondsLeft > 0) return;
+    if (didAutoCloseRef.current) return;
+    didAutoCloseRef.current = true;
+    closeRef.current();
+  }, [secondsLeft, kioskResult]);
+
+  const handleClose = () => {
+    didAutoCloseRef.current = true;
+    onClose();
+  };
+
   if (!kioskResult) return null;
+
+  const pct = (secondsLeft / RECEIPT_AUTO_CLOSE_SECONDS) * 100;
+  const showCollege = Boolean(kioskResult.user?.college?.trim());
+  const showProgram = Boolean(kioskResult.user?.program?.trim());
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm px-4">
       <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 max-w-lg w-full shadow-2xl border border-slate-200 space-y-4 relative">
         <button
           type="button"
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-3 right-3 text-slate-400 hover:text-slate-600 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
           aria-label="Close receipt"
         >
@@ -144,6 +186,32 @@ export function ReceiptOverlay({ kioskResult, onClose }) {
               </span>
             )}
           </div>
+          {(showCollege || showProgram) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-slate-200/80">
+              {showCollege && (
+                <div className="flex items-start gap-2 text-xs text-slate-700">
+                  <Building2 size={14} className="text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                      College
+                    </p>
+                    <p className="font-semibold text-slate-800 leading-snug">{kioskResult.user.college}</p>
+                  </div>
+                </div>
+              )}
+              {showProgram && (
+                <div className="flex items-start gap-2 text-xs text-slate-700">
+                  <GraduationCap size={14} className="text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                      Program
+                    </p>
+                    <p className="font-semibold text-slate-800 leading-snug">{kioskResult.user.program}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           {kioskResult.hasAppointmentToday && kioskResult.appointment && (
             <div className="mt-1 space-y-2">
               <div className="flex items-center justify-between gap-2">
@@ -185,6 +253,27 @@ export function ReceiptOverlay({ kioskResult, onClose }) {
               </div>
             </div>
           )}
+        </div>
+
+        <div className="space-y-2">
+          <div
+            className="flex items-center justify-center gap-2 text-sm font-bold text-slate-700"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <Timer size={16} className="text-primary shrink-0" aria-hidden />
+            <span>
+              Closing in{' '}
+              <span className="tabular-nums text-primary">{secondsLeft}</span>s
+            </span>
+          </div>
+          <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-primary transition-[width] duration-1000 ease-linear"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
         </div>
 
         <p className="text-[11px] text-slate-500 text-center">
@@ -317,7 +406,11 @@ export function KioskCheckIn() {
   const errorBlock = kioskError && (
     <div className="mt-3 border-t border-white/20 pt-3">
       <div className="p-4 rounded-2xl bg-amber-500/20 border border-amber-400/40 text-sm text-amber-50 space-y-1">
-        <p className="font-bold">No appointment found</p>
+        <p className="font-bold">
+          {kioskError.code === 'NO_APPOINTMENT_TODAY'
+            ? 'No appointment found'
+            : 'Check-in could not be completed'}
+        </p>
         <p>{kioskError.message}</p>
       </div>
     </div>

@@ -6,11 +6,36 @@ export function formatIdInput(raw) {
   return raw.toUpperCase().trimStart();
 }
 
+/** Decode checkIn=… from query string (handles NS%2D123-style encoding). */
+function extractIdFromCheckInQueryParam(text) {
+  const m = String(text).match(/[?&]checkIn=([^&\s#]+)/i);
+  if (!m?.[1]) return null;
+  let decoded = m[1];
+  try {
+    decoded = decodeURIComponent(decoded);
+  } catch {
+    // keep as-is
+  }
+  return decoded.trim() || null;
+}
+
 function extractIdFromKioskUrl(text) {
   const s = String(text || '').trim();
-  if (!/^https?:\/\//i.test(s)) return null;
+  if (!s) return null;
+  let toParse = s;
+  if (!/^https?:\/\//i.test(s)) {
+    if (
+      /^www\./i.test(s) ||
+      /[?&]checkIn=/i.test(s) ||
+      /^[\w.-]+\.[a-z]{2,}\//i.test(s)
+    ) {
+      toParse = `https://${s.replace(/^\/+/, '')}`;
+    } else {
+      return null;
+    }
+  }
   try {
-    const u = new URL(s);
+    const u = new URL(toParse);
     const checkIn = u.searchParams.get('checkIn');
     if (checkIn && typeof checkIn === 'string') {
       const t = checkIn.trim();
@@ -22,12 +47,29 @@ function extractIdFromKioskUrl(text) {
   return null;
 }
 
+/** True when the field likely holds a URL / kiosk link rather than a raw ID. */
+export function looksLikeKioskLinkOrUrl(text) {
+  const t = String(text || '').trim();
+  if (!t) return false;
+  if (/^https?:\/\//i.test(t)) return true;
+  if (/^www\./i.test(t)) return true;
+  if (/[?&]checkIn=/i.test(t)) return true;
+  if (/\.[a-z]{2,}\//i.test(t)) return true;
+  return false;
+}
+
 export function extractIdFromScanInput(raw) {
   const text = String(raw || '').trim();
   if (!text) return null;
 
   const directMatch = text.match(/\b(?:NS-\d+|EM-\d+|\d{2}-\d+)\b/i);
   if (directMatch?.[0]) return directMatch[0].toUpperCase();
+
+  const checkInRaw = extractIdFromCheckInQueryParam(text);
+  if (checkInRaw && checkInRaw !== text) {
+    const fromParam = extractIdFromScanInput(checkInRaw);
+    if (fromParam) return fromParam;
+  }
 
   const fromUrl = extractIdFromKioskUrl(text);
   if (fromUrl) return fromUrl;
@@ -59,7 +101,7 @@ export function getKioskQrInputDisplayValue(raw) {
   if (id) return id;
   const t = text.trim();
   if (t.startsWith('{')) return '';
-  if (/^https?:\/\//i.test(t)) return '';
+  if (looksLikeKioskLinkOrUrl(t)) return '';
   return text;
 }
 
@@ -141,6 +183,10 @@ export function useKioskCheckIn() {
           code: resp?.code || null,
           user: resp?.user || null,
         });
+        if (kioskMode === 'qr') {
+          lastProcessedScanRef.current = '';
+          setScanValue('');
+        }
       } finally {
         setKioskLoading(false);
         kioskSubmitLockRef.current = false;
@@ -239,6 +285,7 @@ export function useKioskCheckIn() {
             code: resp?.code || null,
             user: resp?.user || null,
           });
+          lastProcessedScanRef.current = '';
         } finally {
           setKioskLoading(false);
           kioskSubmitLockRef.current = false;
