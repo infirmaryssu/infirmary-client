@@ -109,13 +109,13 @@ export const LandingPage = () => {
                         className="group-hover:translate-x-1 transition-transform shrink-0"
                       />
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => navigate('/kiosk')}
                       className="w-full sm:w-auto px-6 py-4 sm:px-10 sm:py-5 bg-white/10 backdrop-blur-md border border-white/30 text-white font-black rounded-2xl hover:bg-white/20 transition-all flex items-center justify-center gap-3 group"
                     >
                       Kiosk Check-in
                       <QrCode size={20} className="shrink-0" />
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </div>

@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { QrCode, Keyboard, X, Building2, GraduationCap, Timer } from 'lucide-react';
+import { QrCode, Keyboard, X, Building2, GraduationCap, Timer, Printer } from 'lucide-react';
 import logoImg from '../assets/logo.jpg';
 import {
   useKioskCheckIn,
   formatIdInput,
   getKioskQrInputDisplayValue,
 } from '../hooks/useKioskCheckIn';
+import { printKioskReceipt } from '../utils/kioskPrintReceipt';
 
 function KioskResultBlock({ kioskResult, tone = 'light' }) {
   if (!kioskResult) return null;
@@ -96,10 +97,17 @@ function KioskResultBlock({ kioskResult, tone = 'light' }) {
 
 const RECEIPT_AUTO_CLOSE_SECONDS = 10;
 
+/** Set VITE_KIOSK_AUTO_PRINT=false in .env to disable automatic print dialog on receipt open. */
+const KIOSK_AUTO_PRINT =
+  typeof import.meta.env.VITE_KIOSK_AUTO_PRINT === 'string'
+    ? import.meta.env.VITE_KIOSK_AUTO_PRINT !== 'false'
+    : true;
+
 export function ReceiptOverlay({ kioskResult, onClose }) {
   const [secondsLeft, setSecondsLeft] = useState(RECEIPT_AUTO_CLOSE_SECONDS);
   const closeRef = useRef(onClose);
   const didAutoCloseRef = useRef(false);
+  const autoPrintKeyRef = useRef(null);
 
   useEffect(() => {
     closeRef.current = onClose;
@@ -113,6 +121,17 @@ export function ReceiptOverlay({ kioskResult, onClose }) {
       setSecondsLeft((prev) => (prev <= 1 ? 0 : prev - 1));
     }, 1000);
     return () => clearInterval(id);
+  }, [kioskResult]);
+
+  useEffect(() => {
+    if (!kioskResult || !KIOSK_AUTO_PRINT) return undefined;
+    const key = `${kioskResult.queueNumber}-${kioskResult.checkInDate ?? ''}`;
+    if (autoPrintKeyRef.current === key) return undefined;
+    autoPrintKeyRef.current = key;
+    const t = window.setTimeout(() => {
+      printKioskReceipt(kioskResult);
+    }, 650);
+    return () => window.clearTimeout(t);
   }, [kioskResult]);
 
   useEffect(() => {
@@ -133,9 +152,13 @@ export function ReceiptOverlay({ kioskResult, onClose }) {
   const showCollege = Boolean(kioskResult.user?.college?.trim());
   const showProgram = Boolean(kioskResult.user?.program?.trim());
 
+  const handlePrint = () => {
+    printKioskReceipt(kioskResult);
+  };
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm px-4">
-      <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 max-w-lg w-full shadow-2xl border border-slate-200 space-y-4 relative">
+      <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 max-w-lg w-full shadow-2xl border border-slate-200 relative">
         <button
           type="button"
           onClick={handleClose}
@@ -145,32 +168,33 @@ export function ReceiptOverlay({ kioskResult, onClose }) {
           <X size={22} />
         </button>
 
-        <div className="text-center space-y-1 pr-8">
-          <p className="text-[10px] font-black text-primary uppercase tracking-[0.25em]">
-            Kiosk Check-in Receipt
-          </p>
-          <h3 className="font-black text-slate-900 text-2xl sm:text-3xl">
-            You&apos;re in the queue
-          </h3>
-          {kioskResult.checkInDateDisplay && (
-            <p className="text-sm font-bold text-slate-600 pt-1">
-              {kioskResult.checkInDateDisplay}
+        <div className="space-y-4">
+          <div className="text-center space-y-1 pr-8">
+            <p className="text-[10px] font-black text-primary uppercase tracking-[0.25em]">
+              Kiosk Check-in Receipt
             </p>
-          )}
-        </div>
-
-        <div className="flex flex-col items-center space-y-2">
-          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.2em]">
-            Queue Number
-          </p>
-          <div className="px-6 py-3 rounded-full bg-slate-900 text-white font-black shadow-lg shadow-slate-900/40 text-3xl sm:text-4xl tracking-tight">
-            {kioskResult.queueNumber}
+            <h3 className="font-black text-slate-900 text-2xl sm:text-3xl">
+              You&apos;re in the queue
+            </h3>
+            {kioskResult.checkInDateDisplay && (
+              <p className="text-sm font-bold text-slate-600 pt-1">
+                {kioskResult.checkInDateDisplay}
+              </p>
+            )}
           </div>
-        </div>
 
-        <div className="w-full h-px bg-slate-200" />
+          <div className="flex flex-col items-center space-y-2">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+              Queue Number
+            </p>
+            <div className="px-6 py-3 rounded-full bg-slate-900 text-white font-black shadow-lg shadow-slate-900/40 text-3xl sm:text-4xl tracking-tight">
+              {kioskResult.queueNumber}
+            </div>
+          </div>
 
-        <div className="bg-slate-50 rounded-2xl border border-slate-200 space-y-3 text-xs p-5 text-sm">
+          <div className="w-full h-px bg-slate-200" />
+
+          <div className="bg-slate-50 rounded-2xl border border-slate-200 space-y-3 text-xs p-5 text-sm">
           <div className="flex items-center justify-between gap-2">
             <p className="font-semibold text-slate-700">
               {kioskResult.user?.name || 'Guest'}
@@ -255,30 +279,41 @@ export function ReceiptOverlay({ kioskResult, onClose }) {
           )}
         </div>
 
-        <div className="space-y-2">
-          <div
-            className="flex items-center justify-center gap-2 text-sm font-bold text-slate-700"
-            role="status"
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            <Timer size={16} className="text-primary shrink-0" aria-hidden />
-            <span>
-              Closing in{' '}
-              <span className="tabular-nums text-primary">{secondsLeft}</span>s
-            </span>
-          </div>
-          <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-primary transition-[width] duration-1000 ease-linear"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
+          <p className="text-[11px] text-slate-500 text-center">
+            Please wait for your queue number to be called on the infirmary display.
+          </p>
         </div>
 
-        <p className="text-[11px] text-slate-500 text-center">
-          Please wait for your queue number to be called on the infirmary display.
-        </p>
+        <div className="space-y-3 pt-2">
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="w-full py-3.5 rounded-2xl border-2 border-primary/30 bg-primary/5 text-primary font-black text-sm sm:text-base flex items-center justify-center gap-2 hover:bg-primary/10 min-h-[48px]"
+          >
+            <Printer size={20} aria-hidden />
+            Print receipt
+          </button>
+          <div className="space-y-2">
+            <div
+              className="flex items-center justify-center gap-2 text-sm font-bold text-slate-700"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              <Timer size={16} className="text-primary shrink-0" aria-hidden />
+              <span>
+                Closing in{' '}
+                <span className="tabular-nums text-primary">{secondsLeft}</span>s
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-[width] duration-1000 ease-linear"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -482,12 +517,12 @@ export function KioskCheckIn() {
 
         <footer className="relative z-10 border-t border-white/10 px-4 py-5 sm:px-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-sm text-white/50">
           <span>Need help? Speak with the infirmary front desk.</span>
-          <Link
+          {/* <Link
             to="/"
             className="text-white/60 hover:text-white font-bold underline-offset-4 hover:underline min-h-[44px] inline-flex items-center"
           >
             Main website
-          </Link>
+          </Link> */}
         </footer>
       </div>
 
